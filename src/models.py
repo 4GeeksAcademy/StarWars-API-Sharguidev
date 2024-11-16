@@ -1,5 +1,8 @@
+import os
+import sys
 from sqlalchemy import Date, ForeignKey, Integer, String, Float, Column
 from flask_sqlalchemy import SQLAlchemy
+
 
 db = SQLAlchemy()
 
@@ -85,3 +88,4 @@ class Favorites(db.Model):
             "people_id": self.people_id,
             "planets_id": self.planets_id
         }
+    
