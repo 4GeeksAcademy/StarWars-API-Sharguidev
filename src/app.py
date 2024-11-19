@@ -45,6 +45,25 @@ def handle_hello():
 
     return jsonify(response_body), 200
 
+#endpoint de prueba
+
+#endpoint agregar user
+@app.route('/user', methods=['POST'])
+def add_user():
+   first_name = request.json.get('first_name', None)
+   last_name = request.json.get('last_name', None)   
+   email = request.json.get('email', None)
+   password = request.json.get('password', None)
+   date_of_suscription = request.json.get('date_of_suscription', None)
+
+   if not all ([first_name, last_name, email, password, date_of_suscription]):
+       return jsonify({"error": "Missing required fields"}), 400
+
+   new_user = User(first_name=first_name, last_name=last_name, email=email, password=password, date_of_suscription=date_of_suscription)
+   db.session.add(new_user)
+   db.session.commit()
+   return jsonify(new_user.serialize()), 201
+
 
 # tomar todos los personajes de la base de datos
 @app.route('/people', methods=['GET'])

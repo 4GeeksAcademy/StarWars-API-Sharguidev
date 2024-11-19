@@ -1,6 +1,6 @@
 import os
 import sys
-from sqlalchemy import Date, ForeignKey, Integer, String, Float, Column
+from sqlalchemy import DateTime, ForeignKey, Integer, String, Float, Column
 from flask_sqlalchemy import SQLAlchemy
 
 
@@ -13,7 +13,7 @@ class User(db.Model):
     last_name = db.Column(db.String(120), unique=False, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password = db.Column(db.String(80), unique=False, nullable=False)
-    date_of_suscription = db.Column(Date, unique=False, nullable=False)
+    date_of_suscription = db.Column(db.DateTime, unique=False, nullable=False)
 
     def __repr__(self):
         return '<User %r>' % self.first_name
@@ -21,7 +21,10 @@ class User(db.Model):
     def serialize(self):
         return {
             "id": self.id,
+            "first_name": self.first_name,
+            "last_name": self.last_name,
             "email": self.email,
+            "date_of_suscription": self.date_of_suscription
             # do not serialize the password, its a security breach
         }
     
