@@ -6,26 +6,27 @@ from flask_sqlalchemy import SQLAlchemy
 
 db = SQLAlchemy()
 
-class User(db.Model):
-    __tablename__ = 'user'
+
+
+class Fans(db.Model):
+    __tablename__ = 'fans'
     id = db.Column(db.Integer, primary_key=True)
-    first_name = db.Column(db.String(120), unique=False, nullable=False)
-    last_name = db.Column(db.String(120), unique=False, nullable=False)
-    email = db.Column(db.String(120), unique=True, nullable=False)
+    name = db.Column(db.String(80), unique=False, nullable=False)
+    last_name = db.Column(db.String(80), unique=False, nullable=False)
+    email = db.Column(db.String(80), unique=False, nullable=False)
     password = db.Column(db.String(80), unique=False, nullable=False)
     date_of_subscription = db.Column(db.Date, unique=False, nullable=False)
-
     def __repr__(self):
-        return '<User %r>' % self.first_name
+        return '<Fans %r>' % self.id
 
     def serialize(self):
         return {
             "id": self.id,
-            "first_name": self.first_name,
+            "name": self.name,
             "last_name": self.last_name,
             "email": self.email,
             "date_of_subscription": self.date_of_subscription
-            # do not serialize the password, its a security breach
+
         }
     
 class Planets(db.Model):
@@ -78,9 +79,9 @@ class People(db.Model):
 class Favorites(db.Model):
     __tablename__ = 'favorites'
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    people_id = db.Column(db.Integer, db.ForeignKey('people.id'), nullable=False)
-    planets_id = db.Column(db.Integer, db.ForeignKey('planets.id'), nullable=False)
+    fan_id = db.Column(db.Integer, db.ForeignKey('fans.id'), nullable=False)
+    people_id = db.Column(db.Integer, db.ForeignKey('people.id'), nullable=True)
+    planets_id = db.Column(db.Integer, db.ForeignKey('planets.id'), nullable=True)
 
     def __repr__(self):
         return '<Favorites %r>' % self.id
@@ -88,7 +89,7 @@ class Favorites(db.Model):
     def to_dict(self):
         return {
             "id": self.id,
-            "user_id": self.user_id,
+            "fan_id": self.fan_id,
             "people_id": self.people_id,
             "planets_id": self.planets_id
         }

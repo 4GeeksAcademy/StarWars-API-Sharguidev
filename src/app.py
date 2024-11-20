@@ -8,7 +8,7 @@ from flask_swagger import swagger
 from flask_cors import CORS
 from utils import APIException, generate_sitemap
 from admin import setup_admin
-from models import db, User, People, Planets, Favorites
+from models import db, People, Planets, Favorites, Fans
 #from models import Person
 
 app = Flask(__name__)
@@ -35,34 +35,6 @@ def handle_invalid_usage(error):
 @app.route('/')
 def sitemap():
     return generate_sitemap(app)
-
-@app.route('/user', methods=['GET'])
-def handle_hello():
-
-    response_body = {
-        "msg": "Hello, this is your GET /user response "
-    }
-
-    return jsonify(response_body), 200
-
-#endpoint de prueba
-
-#endpoint agregar user
-@app.route('/user', methods=['POST'])
-def add_user():
-   first_name = request.json.get('first_name', None)
-   last_name = request.json.get('last_name', None)   
-   email = request.json.get('email', None)
-   password = request.json.get('password', None)
-   date_of_suscription = request.json.get('date_of_suscription', None)
-
-   if not all ([first_name, last_name, email, password, date_of_suscription]):
-       return jsonify({"error": "Missing required fields"}), 400
-
-   new_user = User(first_name=first_name, last_name=last_name, email=email, password=password, date_of_suscription=date_of_suscription)
-   db.session.add(new_user)
-   db.session.commit()
-   return jsonify(new_user.serialize()), 201
 
 
 # tomar todos los personajes de la base de datos
@@ -95,46 +67,47 @@ def get_planets_by_id(planets_id):
         raise APIException('Planets not found', status_code=404)
     return jsonify(planets.serialize()), 200
 
-# tomar todos los usuarios
-@app.route('/users', methods=['GET'])
+# # tomar todos los usuarios
+@app.route('/fans', methods=['GET'])
 def get_users():
-    users = User.query.all()
-    users_list = [user.serialize() for user in users]
-    return jsonify(users_list), 200
+    fans = Fans.query.all()
+    user = list(map(lambda x: x.serialize(), fans))
+    return jsonify(user), 200
 
 # tomar los favoritos de un usuario
-@app.route('/users/<int:user_id>/favorites', methods=['GET'])
-def get_users_fav_by_id(user_id):
-    favorites = Favorites.query.filter_by(user_id=user_id).all()
+@app.route('/fans/<int:fan_id>/favorites', methods=['GET'])
+def get_users_fav_by_id(fan_id):
+    favorites = Favorites.query.filter_by(fan_id=fan_id).all()
     favorites_list = [favorite.serialize() for favorite in favorites]
     return jsonify(favorites_list), 200
 
 # añadir favoritos a un usuario especifico
-@app.route('/users/<int:user_id>/favorites/planet/<int:planets_id>', methods=['POST'])
-def add_fav_planet(user_id, planets_id):
+@app.route('/fans/<int:fan_id>/favorites/planet/<int:planets_id>', methods=['POST'])
+def add_fav_planet(fan_id, planets_id):
     planet = Planets.query.get(planets_id)
-    if planet is None:
-        raise APIException('Planet not found', status_code=404)
-    favorite = Favorites(user_id=user_id, planets_id=planets_id)
+    fan = Fans.query.get(fan_id)
+    if planet is None and fan is None:
+        raise APIException('Planet or fan not found', status_code=404)
+    favorite = Favorites(fan_id=fan_id, planets_id=planets_id)
     db.session.add(favorite)
     db.session.commit()
     return jsonify(favorite.serialize()), 200
 
 # añadir un personaje favorito a un usuario
-@app.route('/users/<int:user_id>/favorites/people/<int:people_id>', methods=['POST'])
-def add_fav_people(user_id, people_id):
+@app.route('/fans/<int:fan_id>/favorites/people/<int:people_id>', methods=['POST'])
+def add_fav_people(fan_id, people_id):
     people = People.query.get(people_id)
     if people is None:  
         raise APIException('Cannot find people', status_code=404)
-    favorite_people = Favorites(user_id=user_id, people_id=people_id)
+    favorite_people = Favorites(fan_id=fan_id, people_id=people_id)
     db.session.add(favorite_people)
     db.session.commit()
     return jsonify(favorite_people.serialize()), 200
 
 #borrar un planeta favorito
-@app.route('/users/<int:user_id>/favorites/planet/<int:planets_id>', methods=['DELETE'])
-def delete_fav_planet(user_id, planets_id):
-    favorite_planet = Favorites.query.filter_by(user_id=user_id, planets_id=planets_id).first()
+@app.route('/fans/<int:fan_id>/favorites/planet/<int:planets_id>', methods=['DELETE'])
+def delete_fav_planet(fan_id, planets_id):
+    favorite_planet = Favorites.query.filter_by(fan_id=fan_id, planets_id=planets_id).first()
     if favorite_planet is None:
         raise APIException('Planet not found', status_code=404)
     db.session.delete(favorite_planet)
@@ -142,9 +115,9 @@ def delete_fav_planet(user_id, planets_id):
     return jsonify(favorite_planet.serialize()), 200
 
 #borrar un personaje favorito
-@app.route('/users/<int:user_id>/favorites/people/<int:people_id>', methods=['DELETE'])
-def delete_fav_people(user_id, people_id):
-    favorite_people = Favorites.query.filter_by(user_id=user_id, people_id=people_id).first()
+@app.route('/fans/<int:fan_id>/favorites/people/<int:people_id>', methods=['DELETE'])
+def delete_fav_people(fan_id, people_id):
+    favorite_people = Favorites.query.filter_by(fan_id=fan_id, people_id=people_id).first()
     if favorite_people is None:
         raise APIException('People not found', status_code=404)
     db.session.delete(favorite_people)
